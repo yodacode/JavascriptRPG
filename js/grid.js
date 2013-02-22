@@ -1,9 +1,5 @@
-var initApplication = function(){
+
 	
-
-
-
-
 
 
 
@@ -22,6 +18,9 @@ var initApplication = function(){
 		this.cellWidth 	= cellWidth;
 		this.$elem 		= $elem;
 		this.getGrid 	= [];
+		
+		this.gridWidthSize = this.gridWidth/this.cellWidth;
+		this.gridHeightSize = this.gridHeight/this.cellWidth;
 
 	};
 
@@ -93,10 +92,12 @@ var initApplication = function(){
 	 * Class : Bob(jQuery bobSprite, obj position)
 	 * @Docs : Constructor of a Bob (a character)
 	 */
-	var BobConstructor = function Bob(bobSprite, position) {
+	var BobConstructor = function Bob(bobSprite, position, direction) {
 		
 		this.y = position.y;
-		this.x = position.y;
+		this.x = position.x;
+
+		this.direction = direction;
 
 		this.bobSprite = bobSprite;
 
@@ -109,56 +110,195 @@ var initApplication = function(){
 			'background': '#F0F'
 		});
 
+		console.log('position initial : '+ this.x,this.y);
+
 	};
 
 
+	BobConstructor.prototype.forward = function(){
+		var prevCoords = {	
+			x : this.x,
+			y : this.y
+		};
+
+		switch (this.direction){
+			case 'right' : 
+				this.x += 1;
+				break;
+			case 'left' : 
+				this.x -= 1;
+				break;
+			case 'up' : 
+				this.y -= 1;
+				break;
+			case 'down' : 
+				this.y += 1;
+				break;
+		}
+		return prevCoords;
+	};
+
+	/**
+	 * method : 
+	 * @Docs : 
+	 */
+	BobConstructor.prototype.moveTo = function(direction){
+		
+
+		this.direction = direction;
+
+		if(this.canMoveTo(direction)){
+			
+			var prevPosition = this.forward();
+			console.log('nouvlle position : x'+ this.x+' y'+this.y);
+
+		}
+		
+	
+	};
+
+	BobConstructor.prototype.stopMove = function(){
+
+	};
 
 
 	/**
-	 * Class : Goal(jQuery goalSprite, obj position)
-	 * @Docs : Constructor of a goal selectable
+	 * method : 
+	 * @Docs : 
 	 */
-	var GoalConstructor = function Goal(goalSprite, position) {
+	BobConstructor.prototype.canMoveTo = function(){
 		
-		this.y = position.y;
-		this.x = position.y;
-
-		this.goalSprite = goalSprite;
-
-		this.goalSprite.css({
-			'width' 	: Grid.cellWidth,
-			'height' 	: Grid.cellWidth,
-			'position'	: 'absolute',
-			'top'		: (this.y*Grid.cellWidth)+'px', 
-			'left'		: (this.x*Grid.cellWidth)+'px',
-			'background': '#F00'
-		});
-
+		var direction = this.direction;
+		switch (direction){
+			case 'right' : 
+				if(this.x+1 >= Grid.gridWidthSize){
+					return false;
+				} else{
+					//return Map.isWalkable(this.y,this.x+1);
+					return true;
+				}	
+			case 'left' : 
+				if(this.x-1 < 0){
+					return false;
+				} else {
+					//return Map.isWalkable(this.y,this.x-1)
+					return true;
+				}
+			case 'up' : 
+				if(this.y-1 < 0){
+					return false;
+				} else {
+					//return Map.isWalkable(this.y-1,this.x);
+					return true;
+				}
+			case 'down' : 
+				if(this.y+1 >= Grid.gridHeightSize){
+					return false;
+				} else {
+					//return Map.isWalkable(this.y+1,this.x);	
+					return true;
+				}
+		}
 	};
 
 
+/*--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*//*--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*//*--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*//*--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-/***********************************************************************************************/
-/***************************                               *************************************/
-/***************************         INITIALISATIONS       *************************************/
-/***************************                               *************************************/
-/***********************************************************************************************/
-	
-	
 
+	var ControlConstructor = function Control() {
+		
+		this.direction = null;
+		var self = this;
+		
+		$(document).on('keydown', function(e){
+			switch(e.keyCode ) {
+				case 37 : 
+					this.direction = 'left';
+					break;
+				case 38 : 
+					this.direction = 'up';
+					break;
+				case 39 : 
+					this.direction = 'up';
+					break;
+				case 40 : 
+					this.direction = 'down';
+					break;
+				case 40 : 
+					this.direction = 'down';
+					break;
+				default : 
+					break;	
+			}
+			//$('.screen').append('<p>toto</p>');
+			Bob.moveTo(this.direcion);
+		});
+
+		$(document).on('keyup', function(e){
+			//Bob.stopMove();
+		});
+
+		
+	};
+
+
+	/**
+	 * Class : Control()
+	 * @Docs : Permet de catché la direction et l'etat du bouton  
+	 */
+	var ControlConstructor = function Control() {
+		var self = this;
+		this.statment = {
+			up : 'nopress',
+			down : 'nopress',
+			right : 'nopress',
+			left : 'nopress'
+		}
+
+		$(document).on('keydown', function(e){
+			switch(e.keyCode ) {
+				case 37 : 
+					this.direction = 'left';
+					break;
+				case 38 : 
+					this.direction = 'up';
+					break;
+				case 39 : 
+					this.direction = 'right';
+					break;
+				case 40 : 
+					this.direction = 'down';
+					break;
+				default : 
+					break;	
+			}
+			//Sasha.direction = $(this).find('.direction').text();
+			//self.statment[this.direction] = 'press';
+			Bob.moveTo(this.direction);
+			//console.log('press : '+this.direction);
+		});
+
+		$(window).on('keyup', function () {
+			//console.log('nopress');
+			//self.statment[this.direction] = 'nopress';			
+		});
+	};
+
+	//Construcion of the Grid
 	Grid = new GridConstructor( 330, 330, 30, $('.screen') );
 	Grid.build();
 
-	Bob = new BobConstructor($('.bob-sprite'), { y : 0, x : 0 } );	
-	Goal = new GoalConstructor($('.goal-sprite'), { y : 10, x : 10 } );
 
-		
+	//Construction of the Start
+	Bob = new BobConstructor($('.bob-sprite'), { y : 1, x : 0 }, 'up' );	
 
-};
-
-
+	Control = new ControlConstructor();
+	
 
 
-initApplication();
 
 
+
+
+
+	
