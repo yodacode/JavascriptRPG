@@ -230,7 +230,8 @@ var initPokemon = function() {
 		var ScreenWidthCell = Screen.ScreenWidthCell;
 		var ScreenHeightCell = Screen.ScreenHeightCell;
 
-		if(Control.statment[direction] != true) return false;
+		//if(Control.statment[direction] != true) return false;
+		if (Control.isPress != true) return false;
 		switch (direction){
 			case 'right' : 
 				if(this.x+1 >= ScreenWidthCell){
@@ -275,15 +276,10 @@ var initPokemon = function() {
 	 * @Docs : Permet de catché la direction et l'etat du bouton  
 	 */
 	var ControlConstructor = function Control() {
+		
 		var self = this;
 		this.isPress = false;
-		this.isUp = false;
-		this.statment = {
-			up : false,
-			down : false,
-			right : false,
-			left : false
-		}
+		
 		this.initKeyboard();
 	};
 
@@ -291,8 +287,8 @@ var initPokemon = function() {
 	ControlConstructor.prototype.initKeyboard = function(){
 
 		var self = this;
+
 		$(document).on('keydown', function(e){
-			//if(self.isPress) return false;
 			if (Bob.timerMoveTo) return ;
 			switch(e.keyCode ) {
 				case 37 : 
@@ -312,15 +308,17 @@ var initPokemon = function() {
 			}
 
 			Bob.direction = this.direction;
-			self.statment[Bob.direction] = true;
+			self.isPress = true;
 			Bob.moveTo(Bob.direction);
 
 		});
 
 		$(window).keyup(function () {	
-			self.statment[Bob.direction] = false;
+
+			self.isPress = false;
 			if (Bob.timerMoveTo) return ;
 			Bob.stopMove(Bob.direction);
+		
 		});
 	};
 
