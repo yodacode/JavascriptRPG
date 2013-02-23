@@ -1,0 +1,41 @@
+/*-------configuration--------*/
+
+* {
+	font-family:Arial, Helvetica, sans-serif;
+
+}
+
+body {
+	margin: 0;
+	padding: 0;
+}
+
+.overflow {
+	overflow:hidden;
+}
+
+
+
+
+/*-------screen--------*/
+
+.screen {
+	background: #9ABB30;
+}
+
+.screen .sasha{
+	width: 30px;
+	height: 30px;
+	position: absolute;
+	top: 0;
+	left: 0;
+	overflow: hidden;
+	text-align: center;
+	z-index:2000;
+}
+
+
+
+
+
+
