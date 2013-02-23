@@ -87,7 +87,7 @@ var initPokemon = function() {
 	 * Class : Sasha(jQuery sasha, string direction, obj position)
 	 * @Docs : Permet de construir un objet Sasha
 	 */
-	var BobConstructor = function Sasha(bobSprite, direction, position) {
+	var BobConstructor = function Bob(bobSprite, direction, position) {
 		this.y = position.top;
 		this.x = position.left;
 		this.bobSprite = bobSprite;
@@ -95,6 +95,7 @@ var initPokemon = function() {
 		this.step = 'a';
 		this.bobSprite.append('<img src="img/sacha-down-stop.png"/>');
 		this.bobSprite.css({'top':(this.y*Screen.cellHeight)+'px', 'left':(this.x*Screen.cellWidth)+'px'});
+		this.isRuning = false;
 	};
 	
 	
@@ -177,7 +178,7 @@ var initPokemon = function() {
 		this.timerMoveTo = null;
 		this.previousTime = +(new Date);
 		this.currentTime = +(new Date);
-		this.timeGoCell = 300;
+		this.timeGoCell = 100;
 		this.progress = 0;
 		this.currentStep = 0;
 		
@@ -186,7 +187,7 @@ var initPokemon = function() {
 		
 		if(this.canMoveTo(direction)){
 			console.log("y "+this.y+" x "+ this.x);
-			var prevPosition = Sasha.forward();
+			var prevPosition = Bob.forward();
 			
 			this.timerMoveTo = window.setInterval(function(){
 			
@@ -202,15 +203,15 @@ var initPokemon = function() {
 				if(newStep != self.currentStep){
 					self.currentStep = newStep;
 					if(self.canMoveTo(self.direction)){
-						prevPosition = Sasha.forward();
-						Sasha.updateRender(prevPosition, self.progress);
+						prevPosition = Bob.forward();
+						Bob.updateRender(prevPosition, self.progress);
 					} else{
-						Sasha.updateRender(prevPosition, 1);
+						Bob.updateRender(prevPosition, 1);
 						clearInterval(self.timerMoveTo);
 						self.timerMoveTo = null;
 					} 
 				} else {
-					Sasha.updateRender(prevPosition, self.progress);
+					Bob.updateRender(prevPosition, self.progress);
 				}
 			},30);
 			
@@ -276,6 +277,7 @@ var initPokemon = function() {
 	var ControlConstructor = function Control() {
 		var self = this;
 		this.isPress = false;
+		this.isUp = false;
 		this.statment = {
 			up : false,
 			down : false,
@@ -290,7 +292,8 @@ var initPokemon = function() {
 
 		var self = this;
 		$(document).on('keydown', function(e){
-			if(self.isPress) return false;
+			//if(self.isPress) return false;
+			if (Bob.timerMoveTo) return ;
 			switch(e.keyCode ) {
 				case 37 : 
 					this.direction = 'left';
@@ -308,20 +311,20 @@ var initPokemon = function() {
 					break;	
 			}
 
-			Sasha.direction = this.direction;
-			self.statment[Sasha.direction] = true;
-			if (Sasha.timerMoveTo) return ;
-			Sasha.moveTo(Sasha.direction);
-			self.isPress = true;
+			Bob.direction = this.direction;
+			self.statment[Bob.direction] = true;
+			Bob.moveTo(Bob.direction);
+
 		});
 
-		$(window).keyup(function () {
-			console.log('mouseup');
-			self.statment[Sasha.direction] = false;
-			Sasha.stopMove(Sasha.direction);
-			self.isPress = false;
+		$(window).keyup(function () {	
+			self.statment[Bob.direction] = false;
+			if (Bob.timerMoveTo) return ;
+			Bob.stopMove(Bob.direction);
 		});
 	};
+
+
 
 
 /*--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -364,7 +367,7 @@ var initPokemon = function() {
 	Screen.build();
 
 
-	var Sasha = new BobConstructor($('.sasha'), 'down', {top : 6, left : 5});
+	var Bob = new BobConstructor($('.sasha'), 'down', {top : 6, left : 5});
 	var Control = new ControlConstructor();
 
 	
