@@ -15,11 +15,10 @@ var initPokemon = function() {
 		this.screenWidth 	= params.screenWidth;
 		this.screenHeight	= params.screenHeight;
 		this.$elem 		= params.$elem;
-
 		this.ScreenWidthCell = (this.screenWidth/this.cellWidth);
 		this.ScreenHeightCell = (this.screenHeight/this.cellHeight);
-
 		
+		this.build();	
 	};
 
 
@@ -48,6 +47,110 @@ var initPokemon = function() {
 		
 		this.getGrid = grid;
 
+	};
+
+
+/*--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+	
+	
+	/**
+	 * Class : Map()
+	 * @Docs : Permet de construir le tableau et ses coordonnées y puis x  
+	 */
+	var MapConstructor = function Map(width, height) {
+		this.map = [];
+		for(var y = 0; y < height; y++){
+			this.map[y] = [];
+			for(var x = 0 ;x < width; x++){
+				this.map[y][x] = new CellConstructor(x,y);
+			}
+		}
+	};
+
+	/**
+	 * method : addItems()
+	 * @Docs : Permet d'ajouter les items sur la map  
+	 */
+	MapConstructor.prototype.addItems = function(items){
+		for(var i = 0; i < items.length; i++){
+			for(var x = 0; x < items[i].value.width; x++){
+				for(var y = 0; y < items[i].value.height; y++){
+					var currentCell = this.map[y+items[i].value.coords.y][x+items[i].value.coords.x];
+					currentCell.addSprite(items[i].value.img,x,y);
+					currentCell.action = items[i].value.action;
+					currentCell.proba = items[i].value.proba;
+					currentCell.map = items[i].value.map;
+				}
+			}
+		}
+	};
+	
+	/**
+	 * method : isWalkable()
+	 * return : true | false
+	 * @Docs : permet de savoir si la case est walkable  
+	 */
+	MapConstructor.prototype.isWalkable = function(y, x){		
+		var actionSprite = Map.map[y][x].action;
+		switch (actionSprite){
+			case 'conflict' : return false;
+			default : return true;
+		}
+	};
+
+
+/*--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+
+	/**
+	 * method : Item(int y, int x, int height, int width, string img, string action [,int proba])
+	 * @Docs : Permet de construir une Item  
+	 */
+	var ItemConstructor = function Item(params){		
+		this.width = params.width;
+		this.height = params.height;
+		this.coords = { x : params.x, y : params.y };
+		this.img = 'img/'+ params.img;
+		this.action = params.action.type;
+		this.proba = params.action.proba;
+	
+	};
+
+/*--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
+
+		
+	/**
+	 * Class : Cell()
+	 * @Docs : Permet de construir une cellule  
+	 */
+	var CellConstructor = function Cell(x,y) {
+		this.sprite = null;
+		this.x = x;
+		this.y = y;
+		this.render = [];
+	};
+
+
+	/**
+	 * method : addSprite()
+	 * @Docs : Recupère les coordonnées et coupe l'image en sprite grâce à la method updateRender
+	 */
+	CellConstructor.prototype.addSprite = function(img,x,y) {
+		this.sprite = { img : img, x : x, y : y };
+		var render = $('<div class="sprite"></div>').appendTo('.screen');
+		render.width(Screen.cellWidth);
+		render.height(Screen.cellHeight);
+		render.css({
+			'position' : 'absolute',
+			'top' : (this.y*Screen.cellHeight)+'px',
+			'left' : (this.x*Screen.cellWidth)+'px',
+			'overflow' : 'hidden'
+		});
+		render.css({
+			'background-image' : 'url('+this.sprite.img+')',
+			'background-position' : (this.sprite.x*Screen.cellWidth*-1)+'px '+(this.sprite.y*Screen.cellHeight*-1)+'px'
+		});
+		this.render.push(render);
 	};
 	
 
@@ -140,8 +243,8 @@ var initPokemon = function() {
 	 * @Docs : Permet de mettre à jour le rendu de Sasha sur la carte
 	 */
 	BobConstructor.prototype.updateRender = function(coords, progress){
-		var top = coords.y*Screen.cellHeight;
-		var left = coords.x*Screen.cellWidth;
+		var top = coords.y * Screen.cellHeight;
+		var left = coords.x * Screen.cellWidth;
 		switch (this.direction){
 			case 'right' : 
 				left += Screen.cellWidth * progress;
@@ -242,33 +345,32 @@ var initPokemon = function() {
 	BobConstructor.prototype.canMoveTo = function(direction){
 		var ScreenWidthCell = Screen.ScreenWidthCell;
 		var ScreenHeightCell = Screen.ScreenHeightCell;
-
-		//if(Control.statment[direction] != true) return false;
+		
 		if (this.isPress != true) return false;
 		switch (direction){
 			case 'right' : 
 				if(this.x+1 >= ScreenWidthCell){
 					return false;
 				} else{
-					return true;
+					return Map.isWalkable(this.y,this.x+1);
 				}	
 			case 'left' : 
 				if(this.x-1 < 0){
 					return false;
 				} else {
-					return true;
+					return Map.isWalkable(this.y,this.x-1)
 				}
 			case 'up' : 
 				if(this.y-1 < 0){
 					return false;
 				} else {
-					return true;
+					return Map.isWalkable(this.y-1,this.x);
 				}
 			case 'down' : 
 				if(this.y+1 >= ScreenHeightCell){
 					return false;
 				} else {
-					return true;
+					return Map.isWalkable(this.y+1,this.x);
 				}
 		}
 	};
@@ -360,7 +462,10 @@ var initPokemon = function() {
 		$elem : $('.screen')
 	});
 
-	Screen.build();
+	
+	Map = new MapConstructor(Screen.screenWidth / Screen.cellWidth, Screen.screenHeight / Screen.cellHeight);
+	
+	Sprite = new SpriteConstructor();
 
 	var Bob = new BobConstructor({
 		bobSprite : 'sasha', 
@@ -372,7 +477,43 @@ var initPokemon = function() {
 		}
 	});
 
-	console.log(Bob);
+
+	items = 
+	[
+		{
+			name : 'chen', 
+			value :  new ItemConstructor({
+				y : 3,
+				x : 5,
+				height : 1,
+				width : 1,
+				img : 'maps/chen/chen.png',
+				action : { 
+					type : 'conflict', 
+					proba : 1
+				} 
+			})
+		},
+		{
+			name : 'desk', 
+			value :  new ItemConstructor({
+				y : 4,
+				x : 6,
+				height : 2,
+				width : 3,
+				img : 'maps/chen/desk.png',
+				action : { 
+					type : 'conflict', 
+					proba : 1
+				} 
+			})
+		}		
+	];
+
+
+	Map.addItems(items);
+
+	
 
 	
 };
