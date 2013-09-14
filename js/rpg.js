@@ -19,7 +19,7 @@ var initPokemon = function() {
 		this.ScreenWidthCell = (this.screenWidth/this.cellWidth);
 		this.ScreenHeightCell = (this.screenHeight/this.cellHeight);
 
-		console.log('width'+ this.ScreenWidthCell+ 'height '+ this.ScreenHeightCell);
+		
 	};
 
 
@@ -29,13 +29,14 @@ var initPokemon = function() {
 	 */
 	ScreenConstructor.prototype.build = function(){
 
+		var width = this.$elem.width()/this.cellWidth;
+		var height = this.$elem.height()/this.cellWidth;
+		var grid = [];
+		
 		this.$elem
 		.width(this.screenWidth)
 		.height(this.screenHeight);
 
-		var width = this.$elem.width()/this.cellWidth;
-		var height = this.$elem.height()/this.cellWidth;
-		var grid = [];
 
 		for(var y = 0; y < height; y++){
 			grid[y] = [];
@@ -96,6 +97,8 @@ var initPokemon = function() {
 		this.bobSprite.append('<img src="img/sacha-down-stop.png"/>');
 		this.bobSprite.css({'top':(this.y*Screen.cellHeight)+'px', 'left':(this.x*Screen.cellWidth)+'px'});
 		this.isRuning = false;
+
+		this.initKeyboard();
 	};
 	
 	
@@ -163,9 +166,9 @@ var initPokemon = function() {
 	 * @Docs : Permet l'arrêt de la method move
 	 */
 	BobConstructor.prototype.stopMove = function(direction){
+		var self = this;
 		this.bobSprite.empty();
 	 	this.bobSprite.append('<img src="img/sacha-down-stop.png"/>');
-		var self = this;
 		window.clearInterval(self.timerMove);
 	};
 	
@@ -175,6 +178,7 @@ var initPokemon = function() {
 	 */
 	BobConstructor.prototype.moveTo = function(direction){
 		
+		var self = this;
 		this.timerMoveTo = null;
 		this.previousTime = +(new Date);
 		this.currentTime = +(new Date);
@@ -182,22 +186,21 @@ var initPokemon = function() {
 		this.progress = 0;
 		this.currentStep = 0;
 		
-		var self = this;
 		
 		
 		if(this.canMoveTo(direction)){
-			console.log("y "+this.y+" x "+ this.x);
+			
 			var prevPosition = Bob.forward();
 			
 			this.timerMoveTo = window.setInterval(function(){
-			
+				var newStep;			
 				//Calcul du pourcentage de progression dans la case 
 				//obtenu par le ratio du temps parcouru sur le temps que l'on met à parcourir une cellule
 				self.currentTime = +(new Date);
 				self.progress = ((self.currentTime - self.previousTime) % self.timeGoCell) / self.timeGoCell;
 				
 
-				var newStep = Math.floor((self.currentTime - self.previousTime) / self.timeGoCell);
+				newStep = Math.floor((self.currentTime - self.previousTime) / self.timeGoCell);
 				
 				//si on change de case alors on marque le new step et on clear l'interval 
 				if(newStep != self.currentStep){
@@ -231,7 +234,7 @@ var initPokemon = function() {
 		var ScreenHeightCell = Screen.ScreenHeightCell;
 
 		//if(Control.statment[direction] != true) return false;
-		if (Control.isPress != true) return false;
+		if (this.isPress != true) return false;
 		switch (direction){
 			case 'right' : 
 				if(this.x+1 >= ScreenWidthCell){
@@ -261,35 +264,13 @@ var initPokemon = function() {
 	};
 	
 
-	
-	
-/*--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
-	
-	
-	
-/*--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
 
-	
-
-	/**
-	 * Class : Control()
-	 * @Docs : Permet de catché la direction et l'etat du bouton  
-	 */
-	var ControlConstructor = function Control() {
-		
+	BobConstructor.prototype.initKeyboard = function () {
 		var self = this;
 		this.isPress = false;
-		
-		this.initKeyboard();
-	};
-
-
-	ControlConstructor.prototype.initKeyboard = function(){
-
-		var self = this;
-
+				
 		$(document).on('keydown', function(e){
-			if (Bob.timerMoveTo) return ;
+			if (self.timerMoveTo) return ;
 			switch(e.keyCode ) {
 				case 37 : 
 					this.direction = 'left';
@@ -307,17 +288,17 @@ var initPokemon = function() {
 					break;	
 			}
 
-			Bob.direction = this.direction;
+			self.direction = this.direction;
 			self.isPress = true;
-			Bob.moveTo(Bob.direction);
+			self.moveTo(self.direction);
 
 		});
 
 		$(window).keyup(function () {	
 
 			self.isPress = false;
-			if (Bob.timerMoveTo) return ;
-			Bob.stopMove(Bob.direction);
+			if (self.timerMoveTo) return ;
+			self.stopMove(self.direction);
 		
 		});
 	};
@@ -366,7 +347,7 @@ var initPokemon = function() {
 
 
 	var Bob = new BobConstructor($('.sasha'), 'down', {top : 6, left : 5});
-	var Control = new ControlConstructor();
+	console.log(Bob);
 
 	
 };
