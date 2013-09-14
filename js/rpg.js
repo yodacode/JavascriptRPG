@@ -5,16 +5,16 @@ var initPokemon = function() {
 	
 	
 	/**
-	 * Class : Screen(jQuery screen)
+	 * Class : Screen(Object params)
 	 * @Docs : Permet de construir un objet Screen 
 	 */
-	var ScreenConstructor = function Screen (screenWidth, screenHeight, cellWidth, cellHeight, $elem){
+	var ScreenConstructor = function Screen (params){
 		
-		this.cellWidth 	= cellWidth; 
-		this.cellHeight = cellHeight;
-		this.screenWidth 	= screenWidth;
-		this.screenHeight	= screenHeight;
-		this.$elem 		= $elem;
+		this.cellWidth 	= params.cellWidth; 
+		this.cellHeight = params.cellHeight;
+		this.screenWidth 	= params.screenWidth;
+		this.screenHeight	= params.screenHeight;
+		this.$elem 		= params.$elem;
 
 		this.ScreenWidthCell = (this.screenWidth/this.cellWidth);
 		this.ScreenHeightCell = (this.screenHeight/this.cellHeight);
@@ -88,13 +88,16 @@ var initPokemon = function() {
 	 * Class : Sasha(jQuery sasha, string direction, obj position)
 	 * @Docs : Permet de construir un objet Sasha
 	 */
-	var BobConstructor = function Bob(bobSprite, direction, position) {
-		this.y = position.top;
-		this.x = position.left;
-		this.bobSprite = bobSprite;
-		this.direction = direction;
+	var BobConstructor = function Bob(params) {
+		this.y = params.position.top;
+		this.x = params.position.left;
+		this.speed = params.speed;
+		Screen.$elem.append('<div class="'+params.bobSprite+'"></div>');
+		this.bobSprite = $('.' + params.bobSprite);
+
+		this.direction = params.direction;
 		this.step = 'a';
-		this.bobSprite.append('<img src="img/sacha-down-stop.png"/>');
+		this.bobSprite.html('<img src="img/sacha-'+params.direction+'-stop.png"/>');
 		this.bobSprite.css({'top':(this.y*Screen.cellHeight)+'px', 'left':(this.x*Screen.cellWidth)+'px'});
 		this.isRuning = false;
 
@@ -153,6 +156,13 @@ var initPokemon = function() {
 				top += Screen.cellHeight * progress;
 				break;
 		} 		
+		
+		if(this.step == 'a') this.step = 'b';
+		else this.step = 'a';
+
+		this.bobSprite.empty();
+		this.bobSprite.append('<img src="img/sacha-'+this.direction+'-'+this.step+'.png"/>');	
+
 		this.bobSprite.css({
 			'top' : top+'px',
 			'left' : left+'px',
@@ -182,7 +192,7 @@ var initPokemon = function() {
 		this.timerMoveTo = null;
 		this.previousTime = +(new Date);
 		this.currentTime = +(new Date);
-		this.timeGoCell = 100;
+		this.timeGoCell = this.speed;
 		this.progress = 0;
 		this.currentStep = 0;
 		
@@ -190,7 +200,7 @@ var initPokemon = function() {
 		
 		if(this.canMoveTo(direction)){
 			
-			var prevPosition = Bob.forward();
+			var prevPosition = self.forward();
 			
 			this.timerMoveTo = window.setInterval(function(){
 				var newStep;			
@@ -206,15 +216,15 @@ var initPokemon = function() {
 				if(newStep != self.currentStep){
 					self.currentStep = newStep;
 					if(self.canMoveTo(self.direction)){
-						prevPosition = Bob.forward();
-						Bob.updateRender(prevPosition, self.progress);
+						prevPosition = self.forward();
+						self.updateRender(prevPosition, self.progress);
 					} else{
-						Bob.updateRender(prevPosition, 1);
+						self.updateRender(prevPosition, 1);
 						clearInterval(self.timerMoveTo);
 						self.timerMoveTo = null;
 					} 
 				} else {
-					Bob.updateRender(prevPosition, self.progress);
+					self.updateRender(prevPosition, self.progress);
 				}
 			},30);
 			
@@ -342,11 +352,26 @@ var initPokemon = function() {
 	
 	
 
-	var Screen = new ScreenConstructor(330, 330, 30, 30, $('.screen'));
+	var Screen = new ScreenConstructor({
+		screenWidth : 330,
+		screenHeight : 330,
+		cellWidth : 30,
+		cellHeight : 30,
+		$elem : $('.screen')
+	});
+
 	Screen.build();
 
+	var Bob = new BobConstructor({
+		bobSprite : 'sasha', 
+		direction : 'up',
+		speed : 200,
+		position : {
+			top : 6,
+			left : 5
+		}
+	});
 
-	var Bob = new BobConstructor($('.sasha'), 'down', {top : 6, left : 5});
 	console.log(Bob);
 
 	
