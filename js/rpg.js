@@ -1,4 +1,4 @@
-var initPokemon = function() {
+var Pokemon = function() {
 		
 	
 /*--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -197,6 +197,14 @@ var initPokemon = function() {
 		this.speed = params.speed;
 		Screen.$elem.append('<div class="'+params.bobSprite+'"></div>');
 		this.bobSprite = $('.' + params.bobSprite);
+		this.bobSprite.css({
+			width : Screen.cellWidth,
+			height : Screen.cellHeight,
+			'position' : 'absolute',
+			'overflow' : 'hidden',
+			'text-align' : 'center',
+			'z-index' : 2000
+		});
 
 		this.direction = params.direction;
 		this.step = 'a';
@@ -464,18 +472,6 @@ var initPokemon = function() {
 
 	
 	Map = new MapConstructor(Screen.screenWidth / Screen.cellWidth, Screen.screenHeight / Screen.cellHeight);
-	
-	Sprite = new SpriteConstructor();
-
-	var Bob = new BobConstructor({
-		bobSprite : 'sasha', 
-		direction : 'up',
-		speed : 200,
-		position : {
-			top : 6,
-			left : 5
-		}
-	});
 
 
 	items = 
@@ -513,7 +509,26 @@ var initPokemon = function() {
 
 	Map.addItems(items);
 
-	
+
+	new BobConstructor({
+		bobSprite : 'sasha', 
+		direction : 'up',
+		speed : 200,
+		position : {
+			top : 6,
+			left : 5
+		}
+	});
+
+	new BobConstructor({
+		bobSprite : 'bill', 
+		direction : 'down',
+		speed : 200,
+		position : {
+			top : 7,
+			left : 5
+		}
+	});
 
 	
 };
@@ -521,4 +536,4 @@ var initPokemon = function() {
 
 
 
-$(function () { setTimeout(initPokemon, 50); });
+$(function () { setTimeout(Pokemon, 50); });
